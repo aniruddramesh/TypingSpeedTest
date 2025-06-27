@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Typing Speed Test</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 50px auto;
+      max-width: 1000px;
+      padding: 60px;
+      background: linear-gradient(to right, #141e30, #243b55);
+      color: #ffffff;
+      font-size: 22px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+      border-radius: 16px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 50px;
+      color: #00e5ff;
+      text-shadow: 2px 2px #000;
+    }
+
+    #quote {
+      margin-bottom: 30px;
+      font-size: 28px;
+      font-weight: bold;
+      line-height: 1.8;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      font-size: 22px;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #ffffff;
+      border: 2px solid #00e5ff;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00e5ff;
+    }
+
+    button {
+      padding: 16px 28px;
+      font-size: 20px;
+      margin-top: 20px;
+      cursor: pointer;
+      background-color: #00e5ff;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      margin-right: 15px;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #00bcd4;
+      transform: scale(1.05);
+      box-shadow: 0 0 10px #00e5ff;
+    }
+
+    #result {
+      margin-top: 30px;
+      font-size: 26px;
+      color: #76ff03;
+      font-weight: bold;
+      text-shadow: 1px 1px #000;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚀 Test your keyboard</h1>
+  <div id="quote">Loading sentence...</div>
+  <textarea id="typed" placeholder="Start typing here..." disabled></textarea><br />
+  <button onclick="startTest()">Start New Test</button>
+  <button onclick="submitTest()">Submit</button>
+  <div id="result"></div>
+
+  <script>
+    let startTime, sentence;
+
+    async function startTest() {
+      const res = await fetch("http://localhost:5041/TypingTest/quote");
+      const data = await res.json();
+      sentence = data.sentence;
+
+      document.getElementById("quote").innerText = sentence;
+      document.getElementById("typed").value = "";
+      document.getElementById("typed").disabled = false;
+      document.getElementById("typed").focus();
+      document.getElementById("result").innerText = "";
+      startTime = new Date().getTime();
+    }
+
+    async function submitTest() {
+      const typed = document.getElementById("typed").value;
+      const endTime = new Date().getTime();
+      const seconds = (endTime - startTime) / 1000;
+
+      const res = await fetch("http://localhost:5041/TypingTest/result", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sentence: sentence,
+          typed: typed,
+          timeInSeconds: seconds
+        })
+      });
+
+      const result = await res.json();
+      document.getElementById("result").innerText =
+        `🧠 WPM: ${result.wpm.toFixed(2)}\n🎯 Accuracy: ${result.accuracy.toFixed(2)}%`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const quoteEl = document.getElementById('quote');
+
+      // Disable right-click
+      quoteEl.addEventListener('contextmenu', e => e.preventDefault());
+
+      // Disable Ctrl+C
+      document.addEventListener('copy', e => e.preventDefault());
+
+      // Disable paste into textarea
+      document.getElementById('typed').addEventListener('paste', e => e.preventDefault());
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\bin\Debug\net9.0\TypingSpeedTest.exe
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\bin\Debug\net9.0\TypingSpeedTest.deps.json
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\bin\Debug\net9.0\TypingSpeedTest.runtimeconfig.json
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\bin\Debug\net9.0\TypingSpeedTest.dll
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\bin\Debug\net9.0\TypingSpeedTest.pdb
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\obj\Debug\net9.0\TypingSpeedTest.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\obj\Debug\net9.0\TypingSpeedTest.AssemblyInfoInputs.cache
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\obj\Debug\net9.0\TypingSpeedTest.AssemblyInfo.cs
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\obj\Debug\net9.0\TypingSpeedTest.csproj.CoreCompileInputs.cache
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\obj\Debug\net9.0\TypingSpeedTest.dll
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\obj\Debug\net9.0\refint\TypingSpeedTest.dll
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\obj\Debug\net9.0\TypingSpeedTest.pdb
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\obj\Debug\net9.0\TypingSpeedTest.genruntimeconfig.cache
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\obj\Debug\net9.0\ref\TypingSpeedTest.dll
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\bin\Debug\net9.0\Newtonsoft.Json.dll
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\obj\Debug\net9.0\TypingSpeedTest.csproj.AssemblyReference.cache
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\obj\Debug\net9.0\TypingSp.46EC0C3E.Up2Date
