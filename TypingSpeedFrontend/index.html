@@ -7,20 +7,18 @@
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 50px auto;
-      max-width: 1000px;
-      padding: 60px;
+      max-width: 900px;
+      padding: 40px;
       background: linear-gradient(to right, #141e30, #243b55);
       color: #ffffff;
       font-size: 22px;
       box-shadow: 0 0 30px rgba(0,0,0,0.3);
       border-radius: 16px;
-      align-items: center;
-      justify-content: center;
     }
 
     h1 {
       text-align: center;
-      font-size: 50px;
+      font-size: 42px;
       color: #00e5ff;
       text-shadow: 2px 2px #000;
     }
@@ -31,12 +29,17 @@
       font-weight: bold;
       line-height: 1.8;
       user-select: none;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      pointer-events: none;
       background: rgba(255, 255, 255, 0.1);
       padding: 20px;
       border-radius: 12px;
+      white-space: pre-wrap;
+    }
+
+    #quote span.correct {
+      color: #76ff03;
+    }
+    #quote span.incorrect {
+      color: #ff5252;
     }
 
     textarea {
@@ -51,7 +54,7 @@
       box-shadow: 0 0 10px #00e5ff;
     }
 
-    button {
+    button, select, label {
       padding: 16px 28px;
       font-size: 20px;
       margin-top: 20px;
@@ -64,10 +67,18 @@
       transition: all 0.3s ease;
     }
 
-    button:hover {
+    button:hover, select:hover {
       background-color: #00bcd4;
       transform: scale(1.05);
       box-shadow: 0 0 10px #00e5ff;
+    }
+
+    #timer {
+      margin-top: 20px;
+      font-size: 26px;
+      color: #ffd54f;
+      font-weight: bold;
+      text-shadow: 1px 1px #000;
     }
 
     #result {
@@ -80,31 +91,95 @@
   </style>
 </head>
 <body>
-  <h1>🚀 Test your keyboard</h1>
+  <h1>🚀 Typing Speed Test</h1>
+
+  <label for="wordCount">Choose word count:</label>
+  <select id="wordCount">
+    <option value="">-- Select word count --</option>
+    <option value="25">25 words</option>
+    <option value="50">50 words</option>
+    <option value="100">100 words</option>
+  </select>
+
   <div id="quote">Loading sentence...</div>
   <textarea id="typed" placeholder="Start typing here..." disabled></textarea><br />
   <button onclick="startTest()">Start New Test</button>
   <button onclick="submitTest()">Submit</button>
+
+  <div id="timer">⏱️ Time: 0s</div>
   <div id="result"></div>
 
   <script>
-    let startTime, sentence;
+    let startTime, sentence = "";
+    let timerInterval;
+    let typingStarted = false;
 
     async function startTest() {
-      const res = await fetch("http://localhost:5041/TypingTest/quote");
+      const wordCount = document.getElementById("wordCount").value;
+
+      if (!wordCount) {
+        alert("⚠️ Please select a word count before starting the test.");
+        return;
+      }
+
+      const res = await fetch(`http://localhost:5041/TypingTest/quote?words=${wordCount}`);
       const data = await res.json();
       sentence = data.sentence;
 
-      document.getElementById("quote").innerText = sentence;
       document.getElementById("typed").value = "";
       document.getElementById("typed").disabled = false;
       document.getElementById("typed").focus();
       document.getElementById("result").innerText = "";
-      startTime = new Date().getTime();
+      document.getElementById("timer").innerText = "⏱️ Time: 0s";
+      typingStarted = false;
+      clearInterval(timerInterval);
+
+      renderSentence();
+    }
+
+    function renderSentence() {
+      const quoteEl = document.getElementById("quote");
+      quoteEl.innerHTML = "";
+      for (let i = 0; i < sentence.length; i++) {
+        const span = document.createElement("span");
+        span.innerText = sentence[i];
+        quoteEl.appendChild(span);
+      }
+    }
+
+    function updateLiveFeedback() {
+      const typed = document.getElementById("typed").value;
+      const quoteSpans = document.getElementById("quote").querySelectorAll("span");
+
+      // Start timer only on first keypress
+      if (!typingStarted && typed.length > 0) {
+        typingStarted = true;
+        startTime = new Date().getTime();
+        timerInterval = setInterval(() => {
+          const now = new Date().getTime();
+          const elapsedSeconds = Math.floor((now - startTime) / 1000);
+          document.getElementById("timer").innerText = `⏱️ Time: ${elapsedSeconds}s`;
+        }, 1000);
+      }
+
+      for (let i = 0; i < quoteSpans.length; i++) {
+        const char = typed[i];
+        if (char == null) {
+          quoteSpans[i].className = "";
+        } else if (char === sentence[i]) {
+          quoteSpans[i].className = "correct";
+        } else {
+          quoteSpans[i].className = "incorrect";
+        }
+      }
     }
 
     async function submitTest() {
       const typed = document.getElementById("typed").value;
+
+      clearInterval(timerInterval);
+      typingStarted = false;
+
       const endTime = new Date().getTime();
       const seconds = (endTime - startTime) / 1000;
 
@@ -124,16 +199,22 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      const quoteEl = document.getElementById('quote');
+      const typedEl = document.getElementById('typed');
 
-      // Disable right-click
-      quoteEl.addEventListener('contextmenu', e => e.preventDefault());
-
-      // Disable Ctrl+C
+      // Disable copy/paste/right-click
+      document.getElementById('quote').addEventListener('contextmenu', e => e.preventDefault());
       document.addEventListener('copy', e => e.preventDefault());
+      typedEl.addEventListener('paste', e => e.preventDefault());
 
-      // Disable paste into textarea
-      document.getElementById('typed').addEventListener('paste', e => e.preventDefault());
+      // Ctrl + Enter to submit
+      typedEl.addEventListener("keydown", function(e) {
+        if (e.ctrlKey && e.key === "Enter") {
+          submitTest();
+        }
+      });
+
+      // Live feedback and timer trigger
+      typedEl.addEventListener("input", updateLiveFeedback);
     });
   </script>
 </body>

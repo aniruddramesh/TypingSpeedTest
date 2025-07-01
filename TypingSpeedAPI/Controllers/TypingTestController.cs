@@ -1,45 +1,56 @@
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System.Diagnostics;
 
-[ApiController]
-[Route("[controller]")]
-public class TypingTestController : ControllerBase
+namespace TypingSpeedAPI.Controllers
 {
-    private static readonly HttpClient client = new HttpClient(
-        new HttpClientHandler {
-            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        });
-
-    [HttpGet("quote")]
-    public async Task<IActionResult> GetQuote()
+    [ApiController]
+    [Route("[controller]")]
+    public class TypingTestController : ControllerBase
     {
-        var response = await client.GetStringAsync("https://api.quotable.io/random");
-        dynamic json = JsonConvert.DeserializeObject(response);
-        return Ok(new { sentence = json.content.ToString() });
-    }
-
-    [HttpPost("result")]
-    public IActionResult GetResults([FromBody] TypingRequest input)
-    {
-        int correctChars = 0;
-        for (int i = 0; i < input.Sentence.Length && i < input.Typed.Length; i++)
+        [HttpGet("quote")]
+        public IActionResult GetQuote([FromQuery] int words = 25)
         {
-            if (input.Sentence[i] == input.Typed[i]) correctChars++;
+            var random = new Random();
+            var wordList = new List<string>
+            {
+                "code", "keyboard", "performance", "developer", "syntax", "speed", "logic",
+                "test", "algorithm", "compile", "variable", "method", "system", "console",
+                "application", "backend", "frontend", "string", "integer", "object", "framework",
+                "async", "response", "function", "parameter", "project", "language", "runtime"
+            };
+
+            var sentenceWords = new List<string>();
+            for (int i = 0; i < words; i++)
+            {
+                sentenceWords.Add(wordList[random.Next(wordList.Count)]);
+            }
+
+            string sentence = string.Join(" ", sentenceWords) + ".";
+            return Ok(new { sentence });
         }
 
-        double accuracy = (double)correctChars / input.Sentence.Length * 100;
-        double minutes = input.TimeInSeconds / 60.0;
-        int words = input.Sentence.Split(' ').Length;
-        double wpm = words / minutes;
+        [HttpPost("result")]
+        public IActionResult CalculateResults([FromBody] TypingResult model)
+        {
+            int totalWords = model.typed.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+            int correctChars = 0;
 
-        return Ok(new { wpm = wpm, accuracy = accuracy });
+            for (int i = 0; i < Math.Min(model.sentence.Length, model.typed.Length); i++)
+            {
+                if (model.sentence[i] == model.typed[i])
+                    correctChars++;
+            }
+
+            double accuracy = (double)correctChars / model.sentence.Length * 100;
+            double wpm = (totalWords / model.timeInSeconds) * 60;
+
+            return Ok(new { accuracy, wpm });
+        }
     }
 
-    public class TypingRequest
+    public class TypingResult
     {
-        public string Sentence { get; set; }
-        public string Typed { get; set; }
-        public double TimeInSeconds { get; set; }
+        public string sentence { get; set; }
+        public string typed { get; set; }
+        public double timeInSeconds { get; set; }
     }
 }

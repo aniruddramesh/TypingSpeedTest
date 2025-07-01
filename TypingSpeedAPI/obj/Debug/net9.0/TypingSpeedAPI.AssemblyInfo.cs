@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TypingSpeedAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b7e0b67449da81f5ebf828c9458b5fd8212be1e9")]
 [assembly: System.Reflection.AssemblyProductAttribute("TypingSpeedAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TypingSpeedAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

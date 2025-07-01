@@ -1,90 +1,186 @@
-﻿using System;
-using System.Diagnostics;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-
-class Program
-{
-    static async Task Main()
-    {
-        while (true)
-        {
-            Console.Clear();
-            Console.WriteLine("📄 Typing Speed Test (Live Quote Version)");
-            Console.WriteLine("------------------------------------------");
-
-            string sentence = await GetQuoteAsync();
-            Console.WriteLine("\nType the following sentence:\n");
-            Console.WriteLine($"👉 {sentence}\n");
-
-            Console.WriteLine("Start typing below:");
-
-            Stopwatch stopwatch = new Stopwatch();
-            string typed = "";
-            int cursorTop = Console.CursorTop;
-            stopwatch.Start();
-
-            while (typed.Length < sentence.Length)
-            {
-                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-
-                // Allow only printable characters or backspace
-                if (keyInfo.Key == ConsoleKey.Backspace && typed.Length > 0)
-                {
-                    typed = typed.Substring(0, typed.Length - 1);
-                }
-                else if (!char.IsControl(keyInfo.KeyChar))
-                {
-                    typed += keyInfo.KeyChar;
-                }
-
-                // Overwrite same line
-                Console.SetCursorPosition(0, cursorTop);
-                Console.Write(new string(' ', Console.WindowWidth)); // Clear line
-                Console.SetCursorPosition(0, cursorTop);
-                Console.Write(typed);
-            }
-
-            stopwatch.Stop();
-
-            double timeInSeconds = stopwatch.Elapsed.TotalSeconds;
-            double timeInMinutes = timeInSeconds / 60;
-            int wordCount = sentence.Split(' ').Length;
-            double wpm = wordCount / timeInMinutes;
-
-            // Accuracy calculation
-            int correctChars = 0;
-            for (int i = 0; i < sentence.Length; i++)
-            {
-                if (i < typed.Length && sentence[i] == typed[i])
-                    correctChars++;
-            }
-            double accuracy = (double)correctChars / sentence.Length * 100;
-
-            Console.WriteLine("\n\n✅ Typing complete!");
-            Console.WriteLine($"⏱️ Time Taken: {timeInSeconds:F2} seconds");
-            Console.WriteLine($"🧠 WPM: {wpm:F2}");
-            Console.WriteLine($"🎯 Accuracy: {accuracy:F2}%");
-
-            Console.WriteLine("\n🔁 Do you want to try again? (y/n):");
-            string retry = Console.ReadLine().Trim().ToLower();
-            if (retry != "y") break;
-        }
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Typing Speed Test</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 50px auto;
+      max-width: 900px;
+      padding: 40px;
+      background: linear-gradient(to right, #141e30, #243b55);
+      color: #ffffff;
+      font-size: 22px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+      border-radius: 16px;
     }
 
-    static async Task<string> GetQuoteAsync()
-    {
-        // Bypass SSL (safe locally)
-        var handler = new HttpClientHandler();
-        handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-
-        using (HttpClient client = new HttpClient(handler))
-        {
-            string url = "https://api.quotable.io/random";
-            string response = await client.GetStringAsync(url);
-            dynamic json = JsonConvert.DeserializeObject(response);
-            return json.content;
-        }
+    h1 {
+      text-align: center;
+      font-size: 42px;
+      color: #00e5ff;
+      text-shadow: 2px 2px #000;
     }
-}
+
+    #quote {
+      margin-bottom: 30px;
+      font-size: 28px;
+      font-weight: bold;
+      line-height: 1.8;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 12px;
+      white-space: pre-wrap;
+    }
+
+    #quote span.correct {
+      color: #76ff03;
+    }
+    #quote span.incorrect {
+      color: #ff5252;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      font-size: 22px;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #ffffff;
+      border: 2px solid #00e5ff;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00e5ff;
+    }
+
+    button, select, label {
+      padding: 16px 28px;
+      font-size: 20px;
+      margin-top: 20px;
+      cursor: pointer;
+      background-color: #00e5ff;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      margin-right: 15px;
+      transition: all 0.3s ease;
+    }
+
+    button:hover, select:hover {
+      background-color: #00bcd4;
+      transform: scale(1.05);
+      box-shadow: 0 0 10px #00e5ff;
+    }
+
+    #result {
+      margin-top: 30px;
+      font-size: 26px;
+      color: #76ff03;
+      font-weight: bold;
+      text-shadow: 1px 1px #000;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚀 Typing Speed Test</h1>
+
+  <label for="wordCount">Choose word count:</label>
+  <select id="wordCount">
+    <option value="25">25 words</option>
+    <option value="50">50 words</option>
+    <option value="100">100 words</option>
+  </select>
+
+  <div id="quote">Loading sentence...</div>
+  <textarea id="typed" placeholder="Start typing here..." disabled></textarea><br />
+  <button onclick="startTest()">Start New Test</button>
+  <button onclick="submitTest()">Submit</button>
+  <div id="result"></div>
+
+  <script>
+    let startTime, sentence = "";
+
+    async function startTest() {
+      const wordCount = document.getElementById("wordCount").value;
+      const res = await fetch(`http://localhost:5041/TypingTest/quote?words=${wordCount}`);
+      const data = await res.json();
+      sentence = data.sentence;
+
+      document.getElementById("typed").value = "";
+      document.getElementById("typed").disabled = false;
+      document.getElementById("typed").focus();
+      document.getElementById("result").innerText = "";
+      startTime = new Date().getTime();
+
+      renderSentence();
+    }
+
+    function renderSentence() {
+      const quoteEl = document.getElementById("quote");
+      quoteEl.innerHTML = "";
+      for (let i = 0; i < sentence.length; i++) {
+        const span = document.createElement("span");
+        span.innerText = sentence[i];
+        quoteEl.appendChild(span);
+      }
+    }
+
+    function updateLiveFeedback() {
+      const typed = document.getElementById("typed").value;
+      const quoteSpans = document.getElementById("quote").querySelectorAll("span");
+      for (let i = 0; i < quoteSpans.length; i++) {
+        const char = typed[i];
+        if (char == null) {
+          quoteSpans[i].className = "";
+        } else if (char === sentence[i]) {
+          quoteSpans[i].className = "correct";
+        } else {
+          quoteSpans[i].className = "incorrect";
+        }
+      }
+    }
+
+    async function submitTest() {
+      const typed = document.getElementById("typed").value;
+      const endTime = new Date().getTime();
+      const seconds = (endTime - startTime) / 1000;
+
+      const res = await fetch("http://localhost:5041/TypingTest/result", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sentence: sentence,
+          typed: typed,
+          timeInSeconds: seconds
+        })
+      });
+
+      const result = await res.json();
+      document.getElementById("result").innerText =
+        `🧠 WPM: ${result.wpm.toFixed(2)}\n🎯 Accuracy: ${result.accuracy.toFixed(2)}%`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const typedEl = document.getElementById('typed');
+
+      // Disable copy-paste & right click
+      document.getElementById('quote').addEventListener('contextmenu', e => e.preventDefault());
+      document.addEventListener('copy', e => e.preventDefault());
+      typedEl.addEventListener('paste', e => e.preventDefault());
+
+      // Ctrl + Enter to submit
+      typedEl.addEventListener("keydown", function(e) {
+        if (e.ctrlKey && e.key === "Enter") {
+          submitTest();
+        }
+      });
+
+      // Real-time character feedback
+      typedEl.addEventListener("input", updateLiveFeedback);
+    });
+  </script>
+</body>
+</html>

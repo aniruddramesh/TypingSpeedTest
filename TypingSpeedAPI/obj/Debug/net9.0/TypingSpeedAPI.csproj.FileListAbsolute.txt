@@ -64,3 +64,4 @@ C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\TypingSpeedAPI\obj\Debug\net9.0\
 C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\TypingSpeedAPI\obj\Debug\net9.0\TypingSpeedAPI.pdb
 C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\TypingSpeedAPI\obj\Debug\net9.0\TypingSpeedAPI.genruntimeconfig.cache
 C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\TypingSpeedAPI\obj\Debug\net9.0\ref\TypingSpeedAPI.dll
+C:\Users\aniru\OneDrive\Desktop\TypingSpeedTest\TypingSpeedAPI\obj\Debug\net9.0\TypingSpeedAPI.sourcelink.json
